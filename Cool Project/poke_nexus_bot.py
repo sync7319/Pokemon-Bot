@@ -1,3 +1,5 @@
+'''This is the same bot but a less taxing and simple version, it is much slower and doesn't use open cv'''
+
 import os
 import sys
 import threading
