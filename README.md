@@ -11,4 +11,5 @@ pynput
 pillow
 
 Use this command in cmd to install required libraries, assuming you already have python installed with proper path.
+
 pip install opencv-python pynput pillow
