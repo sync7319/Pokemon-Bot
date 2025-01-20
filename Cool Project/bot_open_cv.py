@@ -7,23 +7,14 @@ import cv2
 import mss
 import numpy as np
 
-# -------------------------
-# GLOBALS & CONFIG
-# -------------------------
-
-#1080P
+# Screen regions for different game elements
 POKEMON_REGION = (1129, 424, 1360, 616)
 VS_REGION = (1088, 295, 1156, 352)
 GENERAL_REGION = (705, 705, 1313, 863)
 DISCONNECTED_REGION = (665, 706, 917, 756)
 CONNECT_REGION = (862, 814, 1131, 893)
-#2560X1080 right half
-#POKEMON_REGION = (2075, 600, 325, 250)
-#VS_REGION = (2050, 475, 100, 100)
-#GENERAL_REGION = (1640, 890, 770, 220)
-#DISCONNECTED_REGION = (1490, 910, 240, 160)
-#CONNECT_REGION = (1800, 1050, 350, 175)
 
+# Load Pokémon and party member images from respective folders
 pokemon_images_folder = "pokemon_images"
 alive_party_members_folder = "alive_party_members"
 
@@ -42,11 +33,9 @@ kill_event = threading.Event()
 # Master "active" flag for pause/unpause
 active = True
 
-
-# -------------------------
 # SCREEN CAPTURE & TEMPLATE MATCH
-# -------------------------
 def capture_region(region):
+    # Captures a specific screen region and returns it as a numpy array.
     x, y, w, h = region
     with mss.mss() as sct:
         mon = {"top": y, "left": x, "width": w, "height": h}
@@ -54,10 +43,7 @@ def capture_region(region):
     return cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
 
 def match_template(region, tpl_path, thresh=0.7, gray=True):
-    """
-    Return (found: bool, center_coords: (x, y) or None)
-    by matching `tpl_path` within the given screen `region`.
-    """
+    # Matches a template image within a screen region and returns match status and coordinates.
     if not os.path.isfile(tpl_path):
         return (False, None)
 
@@ -80,11 +66,9 @@ def match_template(region, tpl_path, thresh=0.7, gray=True):
 
     return (False, None)
 
-
-# -------------------------
 # THREADS & LOGIC
-# -------------------------
 def spam_a_and_d(kill_event):
+    # Continuously spams 'A' and 'D' keys unless paused or killed.
     global active
     while not kill_event.is_set():
         if not active:
@@ -105,6 +89,7 @@ def spam_a_and_d(kill_event):
         keyboard.release("d")
 
 def detect_vs_menu():
+    # Detects the presence of the VS menu on the screen.
     global active
     if not active:
         return False
@@ -112,6 +97,7 @@ def detect_vs_menu():
     return f
 
 def detect_single_pokemon(img):
+    # Detects a single Pokémon using a given image template.
     global active
     if not active:
         return False
@@ -121,6 +107,7 @@ def detect_single_pokemon(img):
     return f
 
 def detect_pokemon():
+    # Detects any Pokémon from the list of template images in the defined region.
     global active
     if not active:
         return False
@@ -128,6 +115,7 @@ def detect_pokemon():
         return any(e.map(detect_single_pokemon, pokemon_images))
 
 def handle_fainted_pokemon():
+    # Handles the switching of Pokémon when the current one faints.
     global active
     if not active:
         return False
@@ -153,6 +141,7 @@ def handle_fainted_pokemon():
     return False
 
 def spam_left_click():
+    # Spams left clicks on the Fight button if detected.
     global active
     if not active:
         return
@@ -165,6 +154,7 @@ def spam_left_click():
         pyautogui.click(clicks=10, interval=0.1)
 
 def check_for_disconnect():
+    # Checks for disconnection and reconnects the game if needed.
     global active
     if not active:
         return False
@@ -207,6 +197,7 @@ def check_for_disconnect():
     return True
 
 def main_logic(kill_event):
+    # Runs the main loop to manage game automation logic.
     global active
     lc = 0
     while not kill_event.is_set():
@@ -227,15 +218,9 @@ def main_logic(kill_event):
 
         time.sleep(0.2)
 
-
-# -------------------------
 # TOGGLE THREAD
-# -------------------------
 def toggle_active_thread(kill_event):
-    """
-    Continuously checks if the user pressed '\\' to pause/unpause.
-    If turning active = True, also move mouse to (2075, 600) and click.
-    """
+    # Monitors for user input to toggle active state or stop the script.
     global active
     print("Toggle thread started. Press '\\' to pause/unpause, 'esc' to quit.")
 
@@ -256,11 +241,9 @@ def toggle_active_thread(kill_event):
 
         time.sleep(0.1)
 
-
-# -------------------------
 # MAIN ENTRY POINT
-# -------------------------
 if __name__ == "__main__":
+    # Initialize threads for various functionalities.
     t1 = threading.Thread(target=spam_a_and_d, args=(kill_event,), daemon=True)
     t2 = threading.Thread(target=main_logic, args=(kill_event,), daemon=True)
     t3 = threading.Thread(target=toggle_active_thread, args=(kill_event,), daemon=True)
