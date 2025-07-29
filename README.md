@@ -22,6 +22,6 @@ This Python bot automates gameplay to search for specific Pokémon by dynamicall
    On Windows, press `Win + R`, type `cmd`, and press Enter. On Mac or Linux, open your terminal application.
 
 3. **Install required Python libraries**  
-   Run the following command to install OpenCV, pynput, and Pillow, which are essential for screen capture, input control, and image processing:
+   Run the following command to install OpenCV, pynput, and Pillow, which are needed for screen capture, input control, and image processing:
    ```bash
    pip install opencv-python pynput pillow
